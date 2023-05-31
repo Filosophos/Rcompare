@@ -1,0 +1,1976 @@
+---
+title: "PISASingRUS"
+author: "Галичев Никита"
+date: '2023-03-22'
+output: html_document
+---
+Read ME
+##В данном документе код расположен в основном с использованием хронологического порядка исследования 
+##В конце документа некоторые необходимые функции, которые нужно использовать перед началом кода
+##обязательные части помечаны "!"
+```{r setup, include=FALSE !}
+library(rio)
+library(dplyr)
+library(EdSurvey)
+library(conquer)
+#install.packages('EdSurvey')
+#install.packages('conquer')
+setwd('C:/R')
+#PISA=import('cog.sav')
+library(psychonetrics)#qgraph
+
+library("qgraph")
+library("bootnet")
+library('mgm')
+
+library(NetworkComparisonTest)
+```
+
+## этот код не прогонять второй раз
+```{r pressure, echo=FALSE !}
+options(HTTPUserAgent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 YaBrowser/23.1.5.708 Yowser/2.5 Safari/537.36")
+
+downloadPISA(
+root='C:/R/PISA/2018',
+years = c(2018),
+database = c("INT"),
+cache = FALSE,
+verbose = TRUE)
+```
+Russia
+
+1 343 738
+1 339 706
+1 339 706
+48 114
+1 291 592
+3.59
+7 608
+
+Singapore
+46 229
+45 178
+45 178
+552
+44 626
+1.22
+6 676
++
+```{r readPIsa !}
+Rus=readPISA(
+path="C:/R/PISA/2018/PISA/2018",
+database = c("INT"),
+countries = "rus", 
+cognitive = c("score", "response",  "none")
+)
+```
++
+```{r getdata !}
+
+ rus1=EdSurvey::getData(data=Rus, varnames = colnames(Rus),
+omittedLevels=FALSE, defaultConditions=FALSE)
+
+```
+bookid=15
+ pv=1027
+ testlet=1122
+ math=3326-1661-1139-1134
+ scie= 3327-4140
+ 
+ read-1791
+ 
+ math form 1-12 67-72 73-78
+```{r filter wich}
+r17=filter(rus1,(bookid=="FORM 12" | bookid== "FORM 1"| bookid== "FORM 2"| bookid== "FORM 3"  | bookid== "FORM 4"  | bookid== "FORM 5"  | bookid== "FORM 6"  | bookid== "FORM 7"  | bookid== "FORM 8"  | bookid== "FORM 9"  | bookid== "FORM 10" | bookid== "FORM 67" | bookid== "FORM 68" | bookid== "FORM 69" | bookid== "FORM 70" | bookid== "FORM 71" | bookid== "FORM 72" | bookid== "FORM 73" | bookid== "FORM 74" | bookid== "FORM 75" | bookid== "FORM 76" | bookid== "FORM 77" | bookid== "FORM 78"))
+
+which( colnames(r17)=="dm155q02c")
+```
+Выбрать математические задания
+```{r subset}
+ Rmath<-subset(r17,select = c( #stratum, bookid, st001d01t,
+                             cm033q01s	,
+cm474q01s	,
+dm155q02c	,
+cm155q01s	,
+dm155q03c	,
+cm155q04s	,
+cm411q01s	,
+cm411q02s	,
+cm803q01s	,
+cm442q02s	,
+dm462q01c	,
+cm034q01s	,
+cm305q01s	,
+cm496q01s	,
+cm496q02s	,
+cm423q01s	,
+cm192q01s	,
+dm406q01c	,
+dm406q02c	,
+cm603q01s	,
+cm571q01s	,
+cm564q01s	,
+cm564q02s	,
+cm447q01s	,
+cm273q01s	,
+cm408q01s	,
+cm420q01s	,
+cm446q01s	,
+dm446q02c	,
+cm559q01s	,
+dm828q02c	,
+cm828q03s	,
+cm464q01s	,
+cm800q01s	,
+cm982q01s	,
+cm982q02s	,
+cm982q03s	,
+cm982q04s	,
+cm992q01s	,
+cm992q02s	,
+dm992q03c	,
+cm915q01s	,
+cm915q02s	,
+cm906q01s	,
+dm906q02c	,
+dm00kq02c	,
+cm909q01s	,
+cm909q02s	,
+cm909q03s	,
+cm949q01s	,
+cm949q02s	,
+dm949q03c	,
+cm00gq01s	,
+dm955q01c	,
+dm955q02c	,
+cm955q03s	,
+dm998q02c	,
+cm998q04s	,
+cm905q01s	,
+dm905q02c	,
+cm919q01s	,
+cm919q02s	,
+cm954q01s	,
+dm954q02c	,
+cm954q04s	,
+cm943q01s	,
+cm943q02s	,
+dm953q02c	,
+cm953q03s	,
+dm953q04c	,
+cm948q01s	,
+cm948q02s	,
+cm948q03s	,
+cm936q01s	,
+dm936q02c	,
+dm961q02c	,
+cm961q03s	,
+dm961q05c	,
+cm939q01s	,
+cm939q02s	,
+cm967q01s	,
+cm967q03s	,
+pm033q01s	,
+pm474q01	,
+pm155q02	,
+pm155q01	,
+pm155q03	,
+pm155q04s	,
+pm411q01	,
+pm411q02s	,
+pm803q01s	,
+pm442q02	,
+pm462q01	,
+pm034q01s	,
+pm305q01s	,
+pm496q01s	,
+pm496q02	,
+pm423q01s	,
+pm192q01s	,
+pm406q01	,
+pm406q02	,
+pm603q01s	,
+pm571q01s	,
+pm564q01s	,
+pm564q02s	,
+pm447q01s	,
+pm273q01s	,
+pm408q01s	,
+pm420q01s	,
+pm446q01	,
+pm446q02	,
+pm559q01s	,
+pm828q01	,
+pm828q02	,
+pm828q03	,
+pm464q01s	,
+pm800q01s	,
+pm982q01	,
+pm982q02	,
+pm982q03s	,
+pm982q04s	,
+pm992q01	,
+pm992q02	,
+pm992q03	,
+pm915q01s	,
+pm915q02	,
+pm906q01s	,
+pm906q02	,
+pm00kq02	,
+pm909q01	,
+pm909q02s	,
+pm909q03	,
+pm949q01s	,
+pm949q02s	,
+pm949q03	,
+pm00gq01	,
+pm955q01	,
+pm955q02	,
+pm955q03	,
+pm998q02	,
+pm998q04s	,
+pm905q01s	,
+pm905q02	,
+pm919q01	,
+pm919q02	,
+pm954q01	,
+pm954q02	,
+pm954q04	,
+pm943q01s	,
+pm943q02	,
+pm953q02	,
+pm953q03	,
+pm953q04	,
+pm948q01s	,
+pm948q02	,
+pm948q03	,
+pm936q01	,
+pm936q02	,
+pm961q02	,
+pm961q03s	,
+pm961q05	,
+pm939q01s	,
+pm939q02s	,
+pm967q01	,
+pm967q03s))
+
+```
+ 
+ 
+ "cm948q01s" "cm948q02s" "cm948q03s" "cm936q01s" "dm936q02c" "dm961q02c" "cm961q03s" "dm961q05c" "cm939q01s"
+[10] "cm939q02s" "cm967q01s" "cm967q03s" "pm033q01s" "pm474q01"  "pm155q02"  "pm155q01"  "pm155q03"  "pm155q04s"
+[19] "pm411q01"  "pm411q02s" "pm803q01s" "pm442q02"  "pm462q01"  "pm034q01s" "pm305q01s" "pm496q01s" "pm496q02" 
+[28] "pm423q01s" "pm192q01s" "pm406q01"  "pm406q02"  "pm603q01s" "pm571q01s" "pm564q01s" "pm564q02s" "pm447q01s"
+[37] "pm273q01s" "pm408q01s" "pm420q01s" "pm446q01"  "pm446q02"  "pm559q01s" "pm828q01"  "pm828q02"  "pm828q03" 
+[46] "pm464q01s" "pm800q01s" "pm982q01"  "pm982q02"  "pm982q03s" "pm982q04s" "pm992q01"  "pm992q02"  "pm992q03" 
+[55] "pm915q01s" "pm915q02"  "pm906q01s" "pm906q02"  "pm00kq02"  "pm909q01"  "pm909q02s" "pm909q03"  "pm949q01s"
+[64] "pm949q02s" "pm949q03"  "pm00gq01"  "pm955q01"  "pm955q02"  "pm955q03"  "pm998q02"  "pm998q04s" "pm905q01s"
+[73] "pm905q02"  "pm919q01"  "pm919q02"  "pm954q01"  "pm954q02"  "pm954q04"  "pm943q01s" "pm943q02"  "pm953q02" 
+[82] "pm953q03"  "pm953q04"  "pm948q01s" "pm948q02"  "pm948q03"  "pm936q01"  "pm936q02"  "pm961q02"  "pm961q03s"
+[91] "pm961q05"  "pm939q01s" "pm939q02s" "pm967q01"  "pm967q03s"
++
+```{r NA delete column}
+# Function takes a dataframe as an argument
+find_na_cols <- function(dataframe){
+  
+  # Create empty vector to store column names
+  col_names <- c()
+  
+  # Loop through columns of dataframe
+  for(col in colnames(dataframe)){
+    
+    # Check if all values in column are NA
+    if(all(is.na(dataframe[,col]))){
+      
+      # If all values are NA, add column name to vector
+      col_names <- c(col_names, col)
+    }
+  }
+  
+  # Delete columns from dataframe
+  dataframe <- dataframe[, !(colnames(dataframe) %in% col_names)]
+  
+  # Return dataframe
+  return(dataframe)
+}
+
+Rmath2=find_na_cols(Rmath)
+```
+ 
++ 
+```{r Recode}
+#colnames(B)[161] <- 'Любитель птиц'
+ 
+#B$'Любитель птиц'<-recode(B$'Любитель птиц', "6=1; else=0")
+#table(B$'Любитель птиц')
+
+
+# Use recode to replace values
+recode_all <- function(df) {
+  for (col in names(df)) {
+    df[[col]] <- recode(df[[col]], "'NO CREDIT' = 0; 'FULL CREDIT' = 1; 	
+                        '0 - NO CREDIT'=0;
+                        '1 - FULL CREDIT'= 1; 
+                        '11 - PARTIAL CREDIT'=1; 
+                        '12 - PARTIAL CREDIT'=1;
+                        '13 - PARTIAL CREDIT'=1; 
+                        '21 - FULL CREDIT'=2;		
+                        '22 - FULL CREDIT'=2;
+                        '23 - FULL CREDIT'=2;
+                        '00 - NO CREDIT'=0;
+                        '02 - NO CREDIT'=0;
+                        '01 - NO CREDIT'=0;
+                        '1 - PARTIAL CREDIT' = 1;
+                        '2 - FULL CREDIT'=2;
+                        'NO RESPONSE' = 0;
+                        'NOT APPLICABLE' = 0;
+                        'NOT REACHED' = 0;
+                        NA = 0")
+  }
+  return(df)
+}
+
+
+
+
+Rmath2 <- recode_all(Rmath2)
+
+Rmath2 <- as.data.frame(apply(Rmath2, 2, as.numeric))
+
+mean(is.na( Rmath2 ))
+
+
+calc_freq_na <- function(df) {
+  # Create a list to store the frequency of values and NA for each column
+  freq_na_list <- list()
+  
+  # Loop through each column in the data frame
+  for (col in colnames(df)) {
+    # Calculate the frequency of values and NA for the current column
+    freq_na <- table(df[, col], useNA = "always")
+    # Store the frequency of values and NA for the current column in the list
+    freq_na_list[[col]] <- freq_na
+  }
+  
+  # Return the list
+  return(freq_na_list)
+}
+  calc_freq_na(Rmath2)
+```
+ 
+ регуляризация
+```{r}
+library("lavaan")
+Rm3=Rmath2 %>% cor_auto 
+# Function to estimate the precision matrix using glasso with regularization
+# Input:
+# - data: a numeric matrix of observations
+# - lambda: a scalar value for the regularization parameter
+# Output:
+# - a precision matrix estimated using glasso with regularization
+lambda <- 0.01
+estimate_precision_matrix <- function(data, lambda) {
+  # Calculate the sample correlation matrix
+  cor_matrix <- cor(data)
+  
+  # Add regularization to the diagonal elements
+  reg_matrix <- cor_matrix + diag(ncol(cor_matrix)) * lambda
+  
+  # Use the glasso function to estimate the precision matrix
+  require("glasso")
+  est_matrix <- glasso(reg_matrix, rho=0.01)
+  
+  return(est_matrix$wi)
+}
+
+est_matrix <- estimate_precision_matrix(Rm3, lambda)
+eigen(est_matrix )$values
+```
+
+
+
+```{r network}
+vars <- names(Rmath2)
+
+#eigen(Rm3)$values
+
+Rm4=EBICglasso(est_matrix, nrow(Rmath2), 0, threshold = TRUE)
+
+qgraph(Rm4, layout = "spring", labels = TRUE)
+
+library("bootnet")
+net <- estimateNetwork(Rmath2[,vars], default = "ggmModSelect", verbose = FALSE, missing="pairwise")
+network = bootnet::estimateNetwork(Rmath2[,vars], default = "EBICglasso")
+qgraph::plot(network, layout = "spring", labels = TRUE)
+
+Bmod1=ggm(Rmath2, vars=vars, omega="full", missing = "pairwise", ordered=TRUE)
+Bmod1 <- Bmod1 %>% runmodel
+
+model_stepup <- Bmod1 %>% stepup
+
+stepup_net <- getmatrix(model_stepup, "omega")
+
+L <- averageLayout(as.matrix(stepup_net))
+layout(t(1))
+qgraph(stepup_net, labels = vars, theme = "colorblind", 
+       title = "Psychonetrics estimation", layout = L, minimum=0.05, label.cex=80)
+```
+ # Plot CIs:
+ CIplot(mod_saturated,  "omega", labels = labels, labelstart = 0.2)
+ compare( model ,  model2 )
+ getmatrix(mod1, "omega")
+ 
+```{r cars}
+var=CNTRYID, CNT, CNTSCHID, CNTSTUID, CYC, NatCen, STRATUM, LANGTEST_COG, LANGTEST_PAQ, Region, SUBNATIO, BOOKID, RDESIGN, RCORE_TEST, RS1_TEST
+var = Rus %>% select(CM033Q01S, CM474Q01S, DM155Q02C)
+
+vars = c("CM033Q01S", "CM474Q01S", "DM155Q02C", "CM155Q01S", "DM155Q03C", "CM155Q04S", "CM411Q01S", "CM411Q02S", "CM803Q01S", "CM442Q02S", "DM462Q01C", "CM034Q01S", "CM305Q01S", "CM496Q01S", "CM496Q02S", "CM423Q01S", "CM192Q01S", "DM406Q01C", "DM406Q02C", "CM603Q01S", "CM571Q01S", "CM564Q01S", "CM564Q02S", "CM447Q01S", "CM273Q01S", "CM408Q01S", "CM420Q01S", "CM446Q01S", "DM446Q02C", "CM559Q01S", "DM828Q02C", "CM828Q03S", "CM464Q01S", "CM800Q01S", "CM982Q01S", "CM982Q02S", "CM982Q03S", "CM982Q04S", "CM992Q01S", "CM992Q02S", "DM992Q03C", "CM915Q01S", "CM915Q02S", "CM906Q01S", "DM906Q02C", "DM00KQ02C", "CM909Q01S", "CM909Q02S", "CM909Q03S", "CM949Q01S", "CM949Q02S", "DM949Q03C", "CM00GQ01S", "DM955Q01C", "DM955Q02C", "CM955Q03S", "DM998Q02C", "CM998Q04S", "CM905Q01S", "DM905Q02C", "CM919Q01S", "CM919Q02S", "CM954Q01S", "DM954Q02C", "CM954Q04S", "CM943Q01S", "CM943Q02S", "DM953Q02C", "CM953Q03S", "DM953Q04C", "CM948Q01S", "CM948Q02S", "CM948Q03S", "CM936Q01S", "DM936Q02C", "DM961Q02C", "CM961Q03S", "DM961Q05C", "CM939Q01S", "CM939Q02S", "CM967Q01S", "CM967Q03S", "PM033Q01S", "PM474Q01", "PM155Q02", "PM155Q01", "PM155Q03", "PM155Q04S", "PM411Q01", "PM411Q02S", "PM803Q01S", "PM442Q02", "PM462Q01", "PM034Q01S", "PM305Q01S", "PM496Q01S", "PM496Q02", "PM423Q01S", "PM192Q01S", "PM406Q01", "PM406Q02", "PM603Q01S", "PM571Q01S", "PM564Q01S", "PM564Q02S", "PM447Q01S", "PM273Q01S", "PM408Q01S", 'PM420Q01S',
+    'PM446Q01',
+    'PM446Q02',
+    'PM559Q01S',
+    'PM828Q01',
+    'PM828Q02',
+    'PM828Q03',
+    'PM464Q01S',
+    'PM800Q01S',
+    'PM982Q01',
+    'PM982Q02',
+    'PM982Q03S',
+    'PM982Q04S',
+    'PM992Q01',
+    'PM992Q02',
+    'PM992Q03',
+    'PM915Q01S',
+    'PM915Q02',
+    'PM906Q01S',
+    'PM906Q02',
+    'PM00KQ02',
+    'PM909Q01',
+    'PM909Q02S',
+    'PM909Q03',
+    'PM949Q01S',
+    'PM949Q02S',
+    'PM949Q03',
+    'PM00GQ01',
+    'PM955Q01',
+    'PM955Q02',
+    'PM955Q03',
+    'PM998Q02',
+    'PM998Q04S',
+    'PM905Q01S',
+    'PM905Q02',
+    'PM919Q01',
+    'PM919Q02',
+    'PM954Q01',
+    'PM954Q02',
+    'PM954Q04',
+    'PM943Q01S',
+    'PM943Q02',
+    'PM953Q02',
+    'PM953Q03',
+    'PM953Q04',
+    'PM948Q01S',
+    'PM948Q02',
+    'PM948Q03',
+    'PM936Q01',
+    'PM936Q02',
+    'PM961Q02',
+    'PM961Q03S',
+    'PM961Q05',
+    'PM939Q01S',
+    'PM939Q02S',
+    'PM967Q01',
+    'PM967Q03S')
+
+
+# extract a data.frame with a few variables
+gg <- getData(sgp2012, c("cnt","read","w_fstuwt"))  
+head(gg)
+
+# conduct an analysis on the edsurvey.data.frame
+edsurveyTable(read ~ st04q01 + st20q01, data = sgp2012)
+}
+
+
+vars2= 
+
+rus1=EdSurvey::getData(data=Rus, varnames = colnames(Rus),
+omittedLevels=FALSE, defaultConditions=FALSE)
+
+```
+
+Для ускорения вычисления
+```{r}
+# Load parallel package
+library(parallel)
+
+# Define number of cores to use
+num_cores <- detectCores()
+
+# Create cluster object
+cl <- makeCluster(num_cores)
+
+# Export necessary objects to cluster
+clusterExport(cl, c("Rmath2", "vars"))
+
+# Run computation in parallel
+Bmod1 <- parLapply(cl, 1:num_cores, function(i) {
+  ggm(Rmath2, vars=vars, omega="full", missing = "FIML")
+})
+
+# Close cluster
+stopCluster(cl)
+```
+
+
+
+
++ Сингапур
+```{r sing !}
+sgp=readPISA(
+path="C:/R/PISA/2018/PISA/2018",
+database = c("INT"),
+countries = "sgp", 
+cognitive = c("score", "response",  "none")
+)
+```
++
+```{r getdata !}
+
+ sgp1=EdSurvey::getData(data=sgp, varnames = colnames(sgp),
+omittedLevels=FALSE, defaultConditions=FALSE)
+
+```
+
+```{r filter формы}
+s17=filter(sgp1,(bookid=="FORM 12" | bookid== "FORM 1"| bookid== "FORM 2"| bookid== "FORM 3"  | bookid== "FORM 4"  | bookid== "FORM 5"  | bookid== "FORM 6"  | bookid== "FORM 7"  | bookid== "FORM 8"  | bookid== "FORM 9"  | bookid== "FORM 10" | bookid== "FORM 67" | bookid== "FORM 68" | bookid== "FORM 69" | bookid== "FORM 70" | bookid== "FORM 71" | bookid== "FORM 72" | bookid== "FORM 73" | bookid== "FORM 74" | bookid== "FORM 75" | bookid== "FORM 76" | bookid== "FORM 77" | bookid== "FORM 78"))
+
+which( colnames(s17)=="dm155q02c")
+```
+
+```{r выбор заданий}
+Smath<-subset(s17,select = c( #stratum, bookid, st001d01t,
+                             cm033q01s	,
+cm474q01s	,
+dm155q02c	,
+cm155q01s	,
+dm155q03c	,
+cm155q04s	,
+cm411q01s	,
+cm411q02s	,
+cm803q01s	,
+cm442q02s	,
+dm462q01c	,
+cm034q01s	,
+cm305q01s	,
+cm496q01s	,
+cm496q02s	,
+cm423q01s	,
+cm192q01s	,
+dm406q01c	,
+dm406q02c	,
+cm603q01s	,
+cm571q01s	,
+cm564q01s	,
+cm564q02s	,
+cm447q01s	,
+cm273q01s	,
+cm408q01s	,
+cm420q01s	,
+cm446q01s	,
+dm446q02c	,
+cm559q01s	,
+dm828q02c	,
+cm828q03s	,
+cm464q01s	,
+cm800q01s	,
+cm982q01s	,
+cm982q02s	,
+cm982q03s	,
+cm982q04s	,
+cm992q01s	,
+cm992q02s	,
+dm992q03c	,
+cm915q01s	,
+cm915q02s	,
+cm906q01s	,
+dm906q02c	,
+dm00kq02c	,
+cm909q01s	,
+cm909q02s	,
+cm909q03s	,
+cm949q01s	,
+cm949q02s	,
+dm949q03c	,
+cm00gq01s	,
+dm955q01c	,
+dm955q02c	,
+cm955q03s	,
+dm998q02c	,
+cm998q04s	,
+cm905q01s	,
+dm905q02c	,
+cm919q01s	,
+cm919q02s	,
+cm954q01s	,
+dm954q02c	,
+cm954q04s	,
+cm943q01s	,
+cm943q02s	,
+dm953q02c	,
+cm953q03s	,
+dm953q04c	,
+cm948q01s	,
+cm948q02s	,
+cm948q03s	,
+cm936q01s	,
+dm936q02c	,
+dm961q02c	,
+cm961q03s	,
+dm961q05c	,
+cm939q01s	,
+cm939q02s	,
+cm967q01s	,
+cm967q03s	,
+pm033q01s	,
+pm474q01	,
+pm155q02	,
+pm155q01	,
+pm155q03	,
+pm155q04s	,
+pm411q01	,
+pm411q02s	,
+pm803q01s	,
+pm442q02	,
+pm462q01	,
+pm034q01s	,
+pm305q01s	,
+pm496q01s	,
+pm496q02	,
+pm423q01s	,
+pm192q01s	,
+pm406q01	,
+pm406q02	,
+pm603q01s	,
+pm571q01s	,
+pm564q01s	,
+pm564q02s	,
+pm447q01s	,
+pm273q01s	,
+pm408q01s	,
+pm420q01s	,
+pm446q01	,
+pm446q02	,
+pm559q01s	,
+pm828q01	,
+pm828q02	,
+pm828q03	,
+pm464q01s	,
+pm800q01s	,
+pm982q01	,
+pm982q02	,
+pm982q03s	,
+pm982q04s	,
+pm992q01	,
+pm992q02	,
+pm992q03	,
+pm915q01s	,
+pm915q02	,
+pm906q01s	,
+pm906q02	,
+pm00kq02	,
+pm909q01	,
+pm909q02s	,
+pm909q03	,
+pm949q01s	,
+pm949q02s	,
+pm949q03	,
+pm00gq01	,
+pm955q01	,
+pm955q02	,
+pm955q03	,
+pm998q02	,
+pm998q04s	,
+pm905q01s	,
+pm905q02	,
+pm919q01	,
+pm919q02	,
+pm954q01	,
+pm954q02	,
+pm954q04	,
+pm943q01s	,
+pm943q02	,
+pm953q02	,
+pm953q03	,
+pm953q04	,
+pm948q01s	,
+pm948q02	,
+pm948q03	,
+pm936q01	,
+pm936q02	,
+pm961q02	,
+pm961q03s	,
+pm961q05	,
+pm939q01s	,
+pm939q02s	,
+pm967q01	,
+pm967q03s))
+
+```
+
+```{r обработка данных}
+Smath=find_na_cols(Smath)
+Smath2=Smath
+
+Smath2 <- recode_all(Smath2)
+
+Smath2 <- as.data.frame(apply(Smath2, 2, as.numeric))
+
+mean(is.na( Smath2 ))
+```
+
+```{r частоты}
+POCH <- data.frame(ruso = numeric(70), sing = numeric(70))
+POCH$ruso=calc_freq_na(Rmath2)
+POCH$sing=calc_freq_na(Smath2)
+```
+
+```{r сеть}
+Sm3=Smath2 %>% cor_auto 
+
+sest_matrix <- estimate_precision_matrix(Sm3, lambda)
+eigen(sest_matrix )$values
+
+Sm4=EBICglasso(sest_matrix, nrow(Rmath2), 0, threshold = TRUE)
+qgraph(Sm4, layout = "spring", labels = TRUE)
+```
+
+
+
+По Формам
+```{r основа для god}
+sos1=filter(sgp1,(bookid=="FORM 1"))
+sos2=filter(sgp1,(bookid=="FORM 2"))
+            
+ror1=filter(rus1,(bookid=="FORM 1"))
+ror2=filter(rus1,(bookid=="FORM 2"))
+
+sosm1=megasubset(sos1)
+sosm2=megasubset(sos2)
+rorm1=megasubset(ror1)
+rorm2=megasubset(ror2)
+
+sosmf1=find_na_cols(sosm1)
+sosmf2=find_na_cols(sosm2)
+rormf1=find_na_cols(rorm1)
+rormf2=find_na_cols(rorm2)
+
+sos1<- recode_full(sosmf1)
+sos2<- recode_full(sosmf2)
+ror1<- recode_full(rormf1)
+ror2<- recode_full(rormf2)
+
+#check_names(Rmath2, Smath2) #считаю это функция года
+
+sos1m <- as.data.frame(apply(sos1, 2, as.numeric))
+sos2m <- as.data.frame(apply(sos2, 2, as.numeric))
+ror1m <- as.data.frame(apply(ror1, 2, as.numeric))
+ror2m <- as.data.frame(apply(ror2, 2, as.numeric))
+
+mean(is.na(sos1m))
+mean(is.na(ror1m))
+mean(is.na(sos2m))
+mean(is.na(ror2m))
+
+calc_freq_na(sos1m)
+
+```
+
+Если не работает, используйте функцию в терминале
+```{god use !}
+RF1=god(rus1, 'FORM 1')
+SF1=god(sgp1, 'FORM 1')
+
+RF2=god(rus1, 'FORM 2')
+SF2=god(sgp1, 'FORM 2')
+
+RF3=god(rus1, 'FORM 3')
+SF3=god(sgp1, 'FORM 3')
+
+RF4=god(rus1, 'FORM 4')
+SF4=god(sgp1, 'FORM 4')
+
+RF5=god(rus1, 'FORM 5')
+SF5=god(sgp1, 'FORM 5')
+
+RF6=god(rus1, 'FORM 6')
+SF6=god(sgp1, 'FORM 6')
+
+RF7=god(rus1, 'FORM 7')
+SF7=god(sgp1, 'FORM 7')
+
+RF8=god(rus1, 'FORM 8')
+SF8=god(sgp1, 'FORM 8')
+
+RF9=god(rus1, 'FORM 9')
+SF9=god(sgp1, 'FORM 9')
+
+RF10=god(rus1, 'FORM 10')
+SF10=god(sgp1, 'FORM 10')
+
+RF11=god(rus1, 'FORM 11')
+SF11=god(sgp1, 'FORM 11')
+
+RF12=god(rus1, 'FORM 12')
+SF12=god(sgp1, 'FORM 12')
+```
+Если не работает, используйте функцию в терминале
+```{NA check}
+sosm1=recode_hell(sosm1)
+calc_freq_na(sosm1)
+
+library(psych) 
+describe(sosm1)
+
+HRF1=god_hell(rus1, 'FORM 1')
+HRF2=god_hell(rus1, 'FORM 2')
+HRF3=god_hell(rus1, 'FORM 3')
+HRF4=god_hell(rus1, 'FORM 4')
+HRF5=god_hell(rus1, 'FORM 5')
+HRF6=god_hell(rus1, 'FORM 6')
+HRF7=god_hell(rus1, 'FORM 7')
+HRF8=god_hell(rus1, 'FORM 8')
+HRF9=god_hell(rus1, 'FORM 9')
+HRF10=god_hell(rus1, 'FORM 10')
+HRF11=god_hell(rus1, 'FORM 11')
+HRF12=god_hell(rus1, 'FORM 12')
+
+calc_freq_na(HRF3)
+
+HSF3=god_hell(sgp1, 'FORM 3')
+calc_freq_na(HSF3)
+
+HSF1=god_hell(sgp1, 'FORM 1')
+HSF2=god_hell(sgp1, 'FORM 2')
+HSF3=god_hell(sgp1, 'FORM 3')
+HSF4=god_hell(rus1, 'FORM 4')
+HSF5=god_hell(rus1, 'FORM 5')
+HSF6=god_hell(rus1, 'FORM 6')
+HSF7=god_hell(sgp1, 'FORM 7')
+HSF8=god_hell(sgp1, 'FORM 8')
+HSF9=god_hell(sgp1, 'FORM 9')
+HSF10=god_hell(sgp1, 'FORM 10')
+HSF11=god_hell(sgp1, 'FORM 11')
+HSF12=god_hell(sgp1, 'FORM 12')
+
+calculate_na_proportion(HSF1)
+calculate_na_proportion(HSF2)
+calculate_na_proportion(HSF3)
+calculate_na_proportion(HSF4)
+calculate_na_proportion(HSF5)
+calculate_na_proportion(HSF6)
+calculate_na_proportion(HSF7)
+calculate_na_proportion(HSF8)
+calculate_na_proportion(HSF9)
+calculate_na_proportion(HSF10)
+calculate_na_proportion(HSF11)
+calculate_na_proportion(HSF12)
+
+calculate_na_proportion(HRF1)
+calculate_na_proportion(HRF2)
+calculate_na_proportion(HRF3)
+calculate_na_proportion(HRF4)
+calculate_na_proportion(HRF5)
+calculate_na_proportion(HRF6)
+calculate_na_proportion(HRF7)
+calculate_na_proportion(HRF8)
+calculate_na_proportion(HRF9)
+calculate_na_proportion(HRF10)
+calculate_na_proportion(HRF11)
+calculate_na_proportion(HRF12)
+
+check_names(HRF1,HSF1)
+```
+
+```{IsingFit}
+nsos1=estimateNetwork(sos1m, default = "EBICglasso")
+plot(nsos1, layout = "spring", labels = TRUE)
+
+nror1=estimateNetwork(ror1m, default = "EBICglasso")
+plot(nror1, layout = "spring", labels = TRUE)
+
+
+nsos2=estimateNetwork(sos2m, default = "EBICglasso")
+qgraph(nsos1, layout = "spring", labels = TRUE)
+
+nror2=estimateNetwork(ror2m, default = "EBICglasso")
+qgraph(nsos1, layout = "spring", labels = TRUE)
+
+
+CIplot(x, matrices, alpha_ci = 0.05,
+alpha_color = c(0.05, 0.01, 0.001, 1e-04),
+labels, labels2, labelstart, print = TRUE,
+major_break = 0.2, minor_break = 0.1)
+
+#igraph
+library('IsingFit')
+#IsingFit::
+IsingFit(sos1m, plot = TRUE, lowerbound.lambda=sqrt(log(23)/186))
+IsingFit(ror1m, plot = TRUE, lowerbound.lambda=sqrt(log(23)/186))
+
+IsingFit(sos2m, plot = TRUE, lowerbound.lambda=sqrt(log(22)/196))
+IsingFit(ror2m, plot = TRUE, lowerbound.lambda=sqrt(log(22)/196))
+
+IsingFit(SF3, plot = TRUE)
+IsingFit(RF3, plot = TRUE)
+
+```
+
+Лямбду, оценки
+```{r mgm !}
+#beta version
+x = ncol(RF3)
+type <- c(rep("c", x))
+level=lvlmgm(RF3)
+#mgm::mgm()
+
+fit_k2 <- mgm(data = SF3,
+              type = type,
+              level=level,
+              k = 2)
+
+
+fit_k3 <- mgm(data = RF3,
+              type = type,
+              level=level,
+              k = 2)
+
+#FactorGraph(object = fit_k3, 
+#            PairwiseAsEdge = FALSE, 
+#            labels = autism_data$colnames)
+L <- averageLayout(as.matrix(fit_k2$pairwise$wadj), as.matrix(fit_k3$pairwise$wadj))
+layout(t(1:2))
+qgraph(fit_k2$pairwise$wadj, labels = RF3$colnames, theme = "colorblind", 
+       title = "Singopour F3", layout = L)
+qgraph(fit_k3$pairwise$wadj, labels = RF3$colnames, theme = "colorblind", 
+       title = "Russia F3", layout = L)
+
+sum(fit_k2$pairwise$wadj)
+sum(fit_k3$pairwise$wadj)
+
+network <- estimateNetwork(RF3, default = "mgm", type = type, level = level)
+Snetwork <- estimateNetwork(SF3, default = "mgm", type = type, level = level)
+
+
+
+#MGM 1
+x = ncol(RF1)
+level=lvlmgm(RF1)
+type=cg_list(level)#type <- c(rep("c", x))
+
+Rnet1 <- estimateNetwork(RF1, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+Snet1 <- estimateNetwork(SF1, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+
+pdf("sr1mgm.pdf")
+L <- averageLayout(as.matrix(Rnet1$graph), as.matrix(Snet1$graph))
+layout(t(1:2))
+qgraph(Rnet1$graph, labels = RF1$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Russia F1", layout = L, 
+      mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+qgraph(Snet1$graph, labels = SF1$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Singapore F1", layout = L, 
+       mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+dev.off()
+
+#MGM 2
+x = ncol(RF2)
+type <- c(rep("c", x))
+level=lvlmgm(RF2)
+
+Rnet2 <- estimateNetwork(RF2, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+Snet2 <- estimateNetwork(SF2, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+
+pdf("sr2mgm.pdf")
+L <- averageLayout(as.matrix(Rnet2$graph), as.matrix(Snet2$graph))
+layout(t(1:2))
+qgraph(Rnet2$graph, labels = RF2$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Russia F2", layout = L, 
+      mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+qgraph(Snet2$graph, labels = SF2$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Singapore F2", layout = L, 
+       mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+dev.off()
+
+
+
+#MGM 3
+x = ncol(RF3)
+type <- c(rep("c", x))
+level=lvlmgm(RF3)
+
+Rnet3 <- estimateNetwork(RF3, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+Snet3 <- estimateNetwork(SF3, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+
+pdf("sr3mgm.pdf")
+L <- averageLayout(as.matrix(Rnet3$graph), as.matrix(Snet3$graph))
+layout(t(1:2))
+qgraph(Rnet3$graph, labels = RF3$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Russia F3", layout = L, 
+      mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+qgraph(Snet3$graph, labels = SF3$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Singapore F3", layout = L, 
+       mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+dev.off()
+
+#MGM 4
+x = ncol(RF4)
+type <- c(rep("c", x))
+level=lvlmgm(RF4)
+
+Rnet4 <- estimateNetwork(RF4, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+Snet4 <- estimateNetwork(SF4, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+
+pdf("sr4mgm.pdf")
+L <- averageLayout(as.matrix(Rnet4$graph), as.matrix(Snet4$graph))
+layout(t(1:2))
+qgraph(Rnet4$graph, labels = RF4$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Russia F4", layout = L, 
+      mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+qgraph(Snet4$graph, labels = SF4$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Singapore F4", layout = L, 
+       mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+dev.off()
+
+
+#MGM 5
+RF5=god_full(rus1, 'FORM 5')
+SF5=god_full(sgp1, 'FORM 5')
+x = ncol(RF5)
+type <- c(rep("c", x))
+level=lvlmgm(RF5)
+
+Rnet5 <- estimateNetwork(RF5, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+Snet5 <- estimateNetwork(SF5, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+
+pdf("sr5mgm.pdf")
+L <- averageLayout(as.matrix(Rnet5$graph), as.matrix(Snet5$graph))
+layout(t(1:2))
+qgraph(Rnet5$graph, labels = RF5$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Russia F5", layout = L, 
+      mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+qgraph(Snet5$graph, labels = SF5$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Singapore F5", layout = L, 
+       mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+dev.off()
+
+#MGM 6
+x = ncol(RF6)
+type <- c(rep("c", x))
+level=lvlmgm(RF6)
+
+Rnet6 <- estimateNetwork(RF6, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+Snet6 <- estimateNetwork(SF6, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+
+pdf("sr6mgm.pdf")
+L <- averageLayout(as.matrix(Rnet6$graph), as.matrix(Snet6$graph))
+layout(t(1:2))
+qgraph(Rnet6$graph, labels = RF6$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Russia F6", layout = L, 
+      mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+qgraph(Snet5$graph, labels = SF5$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Singapore F6", layout = L, 
+       mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+dev.off()
+
+#MGM 7
+x = ncol(RF7)
+type <- c(rep("c", x))
+level=lvlmgm(RF7)
+
+Rnet7 <- estimateNetwork(RF7, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+Snet7 <- estimateNetwork(SF7, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+
+pdf("sr7mgm.pdf")
+L <- averageLayout(as.matrix(Rnet7$graph), as.matrix(Snet7$graph))
+layout(t(1:2))
+qgraph(Rnet7$graph, labels = RF7$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Russia F7", layout = L, 
+      mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+qgraph(Snet7$graph, labels = SF7$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Singapore F7", layout = L, 
+       mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+dev.off()
+
+
+#MGM 8
+x = ncol(RF8)
+type <- c(rep("c", x))
+level=lvlmgm(RF8)
+
+Rnet8 <- estimateNetwork(RF8, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+Snet8 <- estimateNetwork(SF8, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+
+pdf("sr8mgm.pdf")
+L <- averageLayout(as.matrix(Rnet8$graph), as.matrix(Snet8$graph))
+layout(t(1:2))
+qgraph(Rnet8$graph, labels = RF8$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Russia F8", layout = L, 
+      mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+qgraph(Snet8$graph, labels = SF8$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Singapore F8", layout = L, 
+       mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+dev.off()
+
+#MGM 9
+RF9=god_full(rus1, 'FORM 9')
+SF9=god_full(sgp1, 'FORM 9')
+x = ncol(RF9)
+type <- c(rep("c", x))
+level=lvlmgm(RF9)
+
+Rnet9 <- estimateNetwork(RF9, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+Snet9 <- estimateNetwork(SF9, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+
+pdf("sr9mgm.pdf")
+L <- averageLayout(as.matrix(Rnet9$graph), as.matrix(Snet9$graph))
+layout(t(1:2))
+qgraph(Rnet9$graph, labels = RF9$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Russia F9", layout = L, 
+      mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+qgraph(Snet9$graph, labels = SF9$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Singapore F9", layout = L, 
+       mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+dev.off()
+
+#MGM 10
+x = ncol(RF10)
+level=lvlmgm(RF10)
+type <- c(rep("c", x))
+
+#type=cg_list(level)#type <- c(rep("c", x))
+
+
+
+Rnet10 <- estimateNetwork(RF10, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.1, rule = "AND", binarySign=TRUE, nCores=4)
+Snet10 <- estimateNetwork(SF10, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.1, rule = "AND", binarySign=TRUE, nCores=4)
+
+pdf("sr10mgm.pdf")
+L <- averageLayout(as.matrix(Rnet10$graph), as.matrix(Snet10$graph))
+layout(t(1:2))
+qgraph(Rnet10$graph, labels = RF10$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Russia F10", layout = L, 
+      mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+qgraph(Snet10$graph, labels = SF10$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Singapore F10", layout = L, 
+       mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+dev.off()
+
+#MGM 11
+RF11=god_full(rus1, 'FORM 11')
+SF11=god_full(sgp1, 'FORM 11')
+
+x = ncol(RF11)
+type <- c(rep("c", x))
+level=lvlmgm(RF11)
+
+Rnet11 <- estimateNetwork(RF11, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+Snet11 <- estimateNetwork(SF11, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+
+pdf("sr11mgm.pdf")
+L <- averageLayout(as.matrix(Rnet11$graph), as.matrix(Snet11$graph))
+layout(t(1:2))
+qgraph(Rnet11$graph, labels = RF11$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Russia F11", layout = L, 
+      mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+qgraph(Snet11$graph, labels = SF11$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Singapore F11", layout = L, 
+       mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+dev.off()
+
+#MGM 12
+x = ncol(RF12)
+type <- c(rep("c", x))
+level=lvlmgm(RF12)
+
+Rnet12 <- estimateNetwork(RF12, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+Snet12 <- estimateNetwork(SF12, default = "mgm", type = type, level = level, criterion = "EBIC", tuning=0.25, rule = "AND", binarySign=TRUE, nCores=4)
+
+pdf("sr12mgm.pdf")
+L <- averageLayout(as.matrix(Rnet12$graph), as.matrix(Snet12$graph))
+layout(t(1:2))
+qgraph(Rnet12$graph, labels = RF12$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Russia F12", layout = L, 
+      mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+qgraph(Snet12$graph, labels = SF12$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Singapore F12", layout = L, 
+       mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+dev.off()
+
+
+#commpare beta version 
+compareNetworks(network, Snetwork)
+# Test accuracy using bootstraps
+accuracy <- bootnet(network, nBoots = 100, type = "case", statistics = c("strength", "closeness", "betweenness"), nCores = 4)
+
+# Plot accuracy results
+plot(accuracy, order = "sample", statistics = c("strength", "closeness", "betweenness"))
+plot(accuracy$sample) 
+corStability(accuracy)
+
+accur=bootnet(network, nBoots = 100, type = "nonparametric", statistics = c("edge", "strength", "outStrength", "inStrength"), nCores = 4)
+plot(accur, order = "sample")
+plot(accur$sample) 
+
+pdf("sr1mgm.pdf")
+L <- averageLayout(as.matrix(network$graph), as.matrix(Snetwork$graph))
+layout(t(1:2))
+qgraph(network$graph, labels = SF1$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Singopour F3", layout = L, vsize=4, esize=7, edge.label.cex = .9)
+qgraph(Snetwork$graph, labels = RF1$colnames, theme = "classic", edge.labels = TRUE,
+       title = "Russia F3", layout = L, mar=c(2,3,5,3), vsize=4, esize=7, edge.label.cex = .9)
+dev.off()
+#mgmfit
+```
+
+```{r левел !}
+set.seed(123) # random permutation seed
+nct_results <- NCT(network, Snetwork,
+                   it = 1000,
+                   progressbar = T)
+
+nct_results
+
+set.seed(123) # random permutation seed
+nct1_results <- NCT(Rnet1, Snet1,
+                   it = 250,
+                   progressbar = TRUE, gamma=0.25,
+                   make.positive.definite = TRUE)
+
+nct1_results
+
+
+set.seed(123) # random permutation seed
+nct2_results <- NCT(Rnet2, Snet2,
+                   it = 250,
+                   progressbar = TRUE, gamma=0.25,
+                   make.positive.definite = TRUE)
+
+nct2_results
+
+set.seed(123) # random permutation seed
+nct3_results <- NCT(Rnet3, Snet3,
+                   it = 250,
+                   progressbar = TRUE, gamma=0.25,
+                   make.positive.definite = TRUE)
+
+nct3_results
+
+set.seed(123) # random permutation seed
+nct4_results <- NCT(Rnet4, Snet4,
+                   it = 250,
+                   progressbar = TRUE, gamma=0.25,
+                   make.positive.definite = TRUE)
+
+nct4_results
+
+set.seed(123) # random permutation seed
+nct5_results <- NCT(Rnet5, Snet5,
+                   it = 250,
+                   progressbar = TRUE, gamma=0.25)
+
+nct5_results
+
+set.seed(123) # random permutation seed
+nct6_results <- NCT(Rnet6, Snet6,
+                   it = 250,
+                   progressbar = TRUE, gamma=0.25,
+                   make.positive.definite = TRUE)
+
+nct6_results
+
+set.seed(123) # random permutation seed
+nct7_results <- NCT(Rnet7, Snet7,
+                   it = 250,
+                   progressbar = TRUE, gamma=0.25)
+
+nct7_results
+
+set.seed(123) # random permutation seed
+nct8_results <- NCT(Rnet8, Snet8,
+                   it = 250,
+                   progressbar = TRUE, gamma=0.25)
+
+nct8_results
+
+set.seed(123) # random permutation seed
+nct9_results <- NCT(Rnet9, Snet9,
+                   it = 250,
+                   progressbar = TRUE, gamma=0.25)
+
+nct9_results
+
+set.seed(123) # random permutation seed
+nct10_results <- NCT(Rnet10, Snet10,
+                   it = 250,
+                   progressbar = TRUE, gamma=0.25)
+
+nct10_results
+
+set.seed(123) # random permutation seed
+nct11_results <- NCT(Rnet11, Snet11,
+                   it = 250,
+                   progressbar = TRUE, gamma=0.25)
+
+nct11_results
+
+set.seed(123) # random permutation seed
+nct12_results <- NCT(Rnet12, Snet12,
+                   it = 250,
+                   progressbar = TRUE, gamma=0.25)
+
+nct12_results
+```
+```{r сравнение модерацией не вышло}
+#1
+MSR1=combine_data(SF1, RF1) #data0=1, 1=2
+x = ncol(MSR1)
+level=lvlmgm(MSR1)
+type=cg_list(level)
+MSR1$source=MSR1$source+1
+
+mgm_1 <- mgm(data = MSR1, type = type, level = level, moderators = x, lambdaSel = "EBIC", lambdaGam = .25, ruleReg = "AND")
+
+# Condition the moderated MGM on the grouping variable
+l_mgm_cond <- list() 
+for(g in 1:2) l_mgm_cond[[g]] <- condition(mgm_1, values = list("24"= g ))
+#l_mgm_cond$pairwise$wadj
+#predict(cond_mgm$pairwise$wadj)
+#showInteraction()
+
+
+#graph в отдельном pdf
+v_max <- rep(NA, 2) 
+for(g in 1:2) v_max[g] <- max(l_mgm_cond[[g]]$pairwise$wadj) 
+pdf('C:/R/plot.pdf', width = 9, height = 3)
+par(mfrow=c(1,2)) 
+for(g in 1:2) { 
+  qgraph(input = l_mgm_cond[[g]]$pairwise$wadj, 
+         edge.color = l_mgm_cond[[g]]$pairwise$edgecolor, 
+         maximum = max(v_max), vsize=5, esize=10, 
+         edge.labels = TRUE, edge.label.cex = 1) 
+  mtext(text = paste0("Group ", g), line=2.5) 
+  } 
+dev.off()
+
+
+
+#2
+MSR2=combine_data(SF2, RF2) #data0=1, 1=2
+x = ncol(MSR2) #x=23
+type <- c(rep("c", x))
+level=lvlmgm(MSR2)
+
+
+mgm_2 <- mgm(data = MSR2, type = type, level = level, moderators = x, lambdaSel = "EBIC", lambdaGam = .25, ruleReg = "AND")
+# Condition the moderated MGM on the grouping variable
+l_mgm_cond <- list() 
+for(g in 0:1) l_mgm_cond[[g+1]] <- condition(mgm_2, values = list('23'= g ))
+#l_mgm_cond$pairwise$wadj
+#predict(cond_mgm$pairwise$wadj)
+#showInteraction()
+
+#graph в отдельном pdf
+v_max <- rep(NA, 2) 
+for(g in 0:1) v_max[g+1] <- max(l_mgm_cond[[g+1]]$pairwise$wadj) 
+pdf('C:/R/plot2.pdf', width = 9, height = 3)
+par(mfrow=c(1,2)) 
+for(g in 0:1) { 
+  qgraph(input = l_mgm_cond[[g+1]]$pairwise$wadj, 
+         edge.color = l_mgm_cond[[g+1]]$pairwise$edgecolor, 
+         layout = "circle", mar=c(2,3,5,3), 
+         maximum = max(v_max), vsize=5, esize=10, 
+         edge.labels = TRUE, edge.label.cex = 1) 
+  mtext(text = paste0("Group ", g), line=2.5) 
+  } 
+dev.off()
+
+#3
+MSR3=combine_data(SF3, RF3) #data0=1, 1=2
+x = ncol(MSR3) #x=24
+level=lvlmgm(MSR3)
+type <- c(rep("c", x))
+
+
+
+mgm_3 <- mgm(data = MSR3, type = type, level = level, moderators = x, lambdaSel = "EBIC", lambdaGam = .25, ruleReg = "AND")
+# Condition the moderated MGM on the grouping variable
+l_mgm_cond <- list() 
+for(g in 0:1) l_mgm_cond[[g+1]] <- condition(mgm_3, values = list('24'= g ))
+#l_mgm_cond$pairwise$wadj
+#predict(cond_mgm$pairwise$wadj)
+#showInteraction()
+
+#graph в отдельном pdf
+v_max <- rep(NA, 2) 
+for(g in 0:1) v_max[g+1] <- max(l_mgm_cond[[g+1]]$pairwise$wadj) 
+pdf('C:/R/plot3.pdf', width = 9, height = 3)
+par(mfrow=c(1,2)) 
+for(g in 0:1) { 
+  qgraph(input = l_mgm_cond[[g+1]]$pairwise$wadj, 
+         edge.color = l_mgm_cond[[g+1]]$pairwise$edgecolor, 
+         layout = "circle", mar=c(2,3,5,3), 
+         maximum = max(v_max), vsize=5, esize=10, 
+         edge.labels = TRUE, edge.label.cex = 1) 
+  mtext(text = paste0("Group ", g), line=2.5) 
+  } 
+dev.off()
+
+
+#9
+MSR9=combine_data(SF9, RF9) #data0=1, 1=2
+x = ncol(MSR9) #x=24
+type <- c(rep("c", x))
+level=lvlmgm(MSR9)
+
+
+mgm_9 <- mgm(data = MSR9, type = type, level = level, moderators = x, lambdaSel = "EBIC", lambdaGam = .25, ruleReg = "AND")
+# Condition the moderated MGM on the grouping variable
+l_mgm_cond <- list() 
+for(g in 0:1) l_mgm_cond[[g+1]] <- condition(mgm_9, values = list('24'= g ))
+#l_mgm_cond$pairwise$wadj
+#predict(cond_mgm$pairwise$wadj)
+#showInteraction()
+
+#graph в отдельном pdf
+v_max <- rep(NA, 2) 
+for(g in 0:1) v_max[g+1] <- max(l_mgm_cond[[g+1]]$pairwise$wadj) 
+pdf('C:/R/plot9.pdf', width = 9, height = 3)
+par(mfrow=c(1,2)) 
+for(g in 0:1) { 
+  qgraph(input = l_mgm_cond[[g+1]]$pairwise$wadj, 
+         edge.color = l_mgm_cond[[g+1]]$pairwise$edgecolor, 
+         layout = "circle", mar=c(2,3,5,3), 
+         maximum = max(v_max), vsize=5, esize=10, 
+         edge.labels = TRUE, edge.label.cex = 1) 
+  mtext(text = paste0("Group ", g), line=2.5) 
+  } 
+dev.off()
+
+
+
+df1=combine_data(df1,df1)
+df2=combine_data(df2,df2)
+#111
+df1 <- data.frame(matrix(0, nrow = 150, ncol = 23))
+df1 <- rbind(df1, data.frame(matrix(1, nrow = 50, ncol = 23)))
+df2 <- data.frame(matrix(0, nrow = 150, ncol = 22))
+df2 <- rbind(df2, data.frame(matrix(1, nrow = 50, ncol = 22)))
+
+df1=RF3
+df1$dm446q02c=df1$dm446q02c*0
+df1$cm273q01s=df1$cm273q01s*0
+df1$cm915q02s=df1$cm915q02s*0
+df1$dm906q02c=df1$dm906q02c*0
+df1$cm992q02s=df1$cm992q02s*0
+
+df2=SF3
+set.seed(123)  # Set the seed for reproducibility
+
+
+
+
+MSR111=combine_data(df1, df2) #data0=1, 1=2
+x = ncol(MSR111) #x=24
+type <- c(rep("c", x))
+level=lvlmgm(MSR111)
+MSR111$source=MSR111$source+1
+
+mgm_111 <- mgm(data = MSR111, type = type, level = level, moderators = 24, lambdaSel = "EBIC", lambdaGam = .25, ruleReg = "AND")
+# Condition the moderated MGM on the grouping variable
+l_mgm_cond <- list() 
+for(g in 1:2) l_mgm_cond[[g]] <- condition(mgm_111, values = list('24'= g ))
+#l_mgm_cond$pairwise$wadj
+#predict(cond_mgm$pairwise$wadj)
+#showInteraction()
+
+#graph в отдельном pdf
+v_max <- rep(NA, 2) 
+for(g in 1:2) v_max[g] <- max(l_mgm_cond[[g]]$pairwise$wadj) 
+pdf('C:/R/plot111.pdf', width = 9, height = 3)
+par(mfrow=c(1,2)) 
+for(g in 1:2) { 
+  qgraph(input = l_mgm_cond[[g]]$pairwise$wadj, 
+         edge.color = l_mgm_cond[[g]]$pairwise$edgecolor, 
+         layout = "circle", mar=c(2,3,5,3), 
+         maximum = max(v_max), vsize=5, esize=10, 
+         edge.labels = TRUE, edge.label.cex = 1) 
+  mtext(text = paste0("Group ", g), line=2.5) 
+  } 
+dev.off()
+
+```
+
+```{r combine data}
+combine_data <- function(df1, df2) {
+    # Add a new column to each dataframe indicating the source dataframe
+    df1$source <- 0
+    df2$source <- 1
+    
+    # Combine the dataframes
+    combined_df <- rbind(df1, df2)
+    
+    # Return the combined dataframe
+    return(combined_df)
+  } 
+```
+
+```{r левел mgm !}
+lvlmgm <- function(dataset) {
+  # Initialize level variable
+  level <- c()
+  
+  # Loop through each column in the dataset
+  for (col in names(dataset)) {
+    
+    # Check if all values in the column are either 0 or 1
+    if (all(dataset[[col]] %in% c(0, 1))) {
+      level <- c(level, 2)
+    }
+    
+    # Check if all values in the column are either 0, 1, or 2
+    else if (all(dataset[[col]] %in% c(0, 1, 2))) {
+      level <- c(level, 3)
+    }
+  }
+  
+  # Return the updated level variable
+  return(level)
+}
+```
+ 
+```{r левел mgm !}   
+cg_list <- function(lst) {
+    # Loop through the list and modify it
+    for (i in 1:length(lst)) {
+      if (lst[[i]] == 2) {
+        lst[[i]] <- "c"
+      } else if (lst[[i]] == 1) {
+        lst[[i]] <- "g"
+      }
+    }
+    
+    # Return the modified list
+    return(lst)
+}   
+``` 
+   
+```{r мегасабсет всех заданий математики !}
+megasubset<- function(data){
+  # Subset data with option select = c(stratum, bookid, st001d01t)
+  data <- subset(data, select = c( cm033q01s	,
+cm474q01s	,
+dm155q02c	,
+cm155q01s	,
+dm155q03c	,
+cm155q04s	,
+cm411q01s	,
+cm411q02s	,
+cm803q01s	,
+cm442q02s	,
+dm462q01c	,
+cm034q01s	,
+cm305q01s	,
+cm496q01s	,
+cm496q02s	,
+cm423q01s	,
+cm192q01s	,
+dm406q01c	,
+dm406q02c	,
+cm603q01s	,
+cm571q01s	,
+cm564q01s	,
+cm564q02s	,
+cm447q01s	,
+cm273q01s	,
+cm408q01s	,
+cm420q01s	,
+cm446q01s	,
+dm446q02c	,
+cm559q01s	,
+dm828q02c	,
+cm828q03s	,
+cm464q01s	,
+cm800q01s	,
+cm982q01s	,
+cm982q02s	,
+cm982q03s	,
+cm982q04s	,
+cm992q01s	,
+cm992q02s	,
+dm992q03c	,
+cm915q01s	,
+cm915q02s	,
+cm906q01s	,
+dm906q02c	,
+dm00kq02c	,
+cm909q01s	,
+cm909q02s	,
+cm909q03s	,
+cm949q01s	,
+cm949q02s	,
+dm949q03c	,
+cm00gq01s	,
+dm955q01c	,
+dm955q02c	,
+cm955q03s	,
+dm998q02c	,
+cm998q04s	,
+cm905q01s	,
+dm905q02c	,
+cm919q01s	,
+cm919q02s	,
+cm954q01s	,
+dm954q02c	,
+cm954q04s	,
+cm943q01s	,
+cm943q02s	,
+dm953q02c	,
+cm953q03s	,
+dm953q04c	,
+cm948q01s	,
+cm948q02s	,
+cm948q03s	,
+cm936q01s	,
+dm936q02c	,
+dm961q02c	,
+cm961q03s	,
+dm961q05c	,
+cm939q01s	,
+cm939q02s	,
+cm967q01s	,
+cm967q03s	,
+pm033q01s	,
+pm474q01	,
+pm155q02	,
+pm155q01	,
+pm155q03	,
+pm155q04s	,
+pm411q01	,
+pm411q02s	,
+pm803q01s	,
+pm442q02	,
+pm462q01	,
+pm034q01s	,
+pm305q01s	,
+pm496q01s	,
+pm496q02	,
+pm423q01s	,
+pm192q01s	,
+pm406q01	,
+pm406q02	,
+pm603q01s	,
+pm571q01s	,
+pm564q01s	,
+pm564q02s	,
+pm447q01s	,
+pm273q01s	,
+pm408q01s	,
+pm420q01s	,
+pm446q01	,
+pm446q02	,
+pm559q01s	,
+pm828q01	,
+pm828q02	,
+pm828q03	,
+pm464q01s	,
+pm800q01s	,
+pm982q01	,
+pm982q02	,
+pm982q03s	,
+pm982q04s	,
+pm992q01	,
+pm992q02	,
+pm992q03	,
+pm915q01s	,
+pm915q02	,
+pm906q01s	,
+pm906q02	,
+pm00kq02	,
+pm909q01	,
+pm909q02s	,
+pm909q03	,
+pm949q01s	,
+pm949q02s	,
+pm949q03	,
+pm00gq01	,
+pm955q01	,
+pm955q02	,
+pm955q03	,
+pm998q02	,
+pm998q04s	,
+pm905q01s	,
+pm905q02	,
+pm919q01	,
+pm919q02	,
+pm954q01	,
+pm954q02	,
+pm954q04	,
+pm943q01s	,
+pm943q02	,
+pm953q02	,
+pm953q03	,
+pm953q04	,
+pm948q01s	,
+pm948q02	,
+pm948q03	,
+pm936q01	,
+pm936q02	,
+pm961q02	,
+pm961q03s	,
+pm961q05	,
+pm939q01s	,
+pm939q02s	,
+pm967q01	,
+pm967q03s))
+  
+  # Return subsetted data
+  return(data)
+}
+```
+
+```{r уникальность колонок !}
+check_names <- function(df1, df2) {
+  # Get the column names from both data frames
+  col_names_df1 <- colnames(df1)
+  col_names_df2 <- colnames(df2)
+  
+  # Check if the column names are unique
+  unique_col_names <- setdiff(col_names_df1, col_names_df2)
+  
+  # If the column names are unique, return the name
+  if (length(unique_col_names) > 0) {
+    return(unique_col_names)
+  } else {
+    # If there are no unique ones, return "equal"
+    return("equal")
+  }
+}
+```
+
+```{r full=1 }
+recode_full <- function(df) {
+  for (col in names(df)) {
+    df[[col]] <- recode(df[[col]], "'NO CREDIT' = 0; 'FULL CREDIT' = 1; 	
+                        '0 - NO CREDIT'=0;
+                        '1 - FULL CREDIT'= 1; 
+                        '11 - PARTIAL CREDIT'=1; 
+                        '12 - PARTIAL CREDIT'=1;
+                        '13 - PARTIAL CREDIT'=1; 
+                        '21 - FULL CREDIT'=1;		
+                        '22 - FULL CREDIT'=1;
+                        '23 - FULL CREDIT'=1;
+                        '00 - NO CREDIT'=0;
+                        '02 - NO CREDIT'=0;
+                        '01 - NO CREDIT'=0;
+                        '1 - PARTIAL CREDIT' = 1;
+                        '2 - FULL CREDIT' =1;
+                        'NO RESPONSE' = 0;
+                        'NOT REACHED' = 0;
+                        'NOT APPLICABLE' = 0;
+                         NA = 0")
+  }
+  return(df)
+}
+
+god_full <- function(data, form_number) {
+  # Filter the data for the given form number
+  sos1 <- filter(data, bookid == form_number)
+  
+  # Subset the data
+  sosm1 <- megasubset(sos1)
+  
+  # Find the columns with NA values
+  sosmf1 <- find_na_cols(sosm1)
+  
+  # Recode the full data
+  sos1 <- recode_full(sosmf1)
+  
+  # Convert the data to a data frame
+  sos1m <- as.data.frame(apply(sos1, 2, as.numeric))
+  
+  # Calculate the mean of the NA values
+  mean_na <- mean(is.na(sos1m))
+  
+  # Return the mean of the NA values
+  return(sos1m)
+}
+```
+
+```{r god !}
+god <- function(data, form_number) {
+  # Filter the data for the given form number
+  sos1 <- filter(data, bookid == form_number)
+  
+  # Subset the data
+  sosm1 <- megasubset(sos1)
+  
+  # Find the columns with NA values
+  sosmf1 <- find_na_cols(sosm1)
+  
+  # Recode the full data
+  sos1 <- recode_all(sosmf1)
+  
+  # Convert the data to a data frame
+  sos1m <- as.data.frame(apply(sos1, 2, as.numeric))
+  
+  # Calculate the mean of the NA values
+  mean_na <- mean(is.na(sos1m))
+  
+  # Return the mean of the NA values
+  return(sos1m)
+}
+```
+
+```{r NA delete column !}
+# Function takes a dataframe as an argument
+find_na_cols <- function(dataframe){
+  
+  # Create empty vector to store column names
+  col_names <- c()
+  
+  # Loop through columns of dataframe
+  for(col in colnames(dataframe)){
+    
+    # Check if all values in column are NA
+    if(all(is.na(dataframe[,col]))){
+      
+      # If all values are NA, add column name to vector
+      col_names <- c(col_names, col)
+    }
+  }
+  
+  # Delete columns from dataframe
+  dataframe <- dataframe[, !(colnames(dataframe) %in% col_names)]
+  
+  # Return dataframe
+  return(dataframe)
+}
+```
+
+```{r Recode all !}
+# Use recode to replace values
+recode_all <- function(df) {
+  for (col in names(df)) {
+    df[[col]] <- recode(df[[col]], "'NO CREDIT' = 0; 'FULL CREDIT' = 1; 	
+                        '0 - NO CREDIT'=0;
+                        '1 - FULL CREDIT'= 1; 
+                        '11 - PARTIAL CREDIT'=1; 
+                        '12 - PARTIAL CREDIT'=1;
+                        '13 - PARTIAL CREDIT'=1; 
+                        '21 - FULL CREDIT'=2;		
+                        '22 - FULL CREDIT'=2;
+                        '23 - FULL CREDIT'=2;
+                        '00 - NO CREDIT'=0;
+                        '02 - NO CREDIT'=0;
+                        '01 - NO CREDIT'=0;
+                        '1 - PARTIAL CREDIT' = 1;
+                        '2 - FULL CREDIT'=2;
+                        'NO RESPONSE' = 0;
+                        'NOT APPLICABLE' = 0;
+                        'NOT REACHED' = 0;
+                        NA = 0")
+  }
+  return(df)
+}
+
+
+
+
+#Rmath2 <- recode_all(Rmath2)
+
+#Rmath2 <- as.data.frame(apply(Rmath2, 2, as.numeric))
+
+#mean(is.na( Rmath2 ))
+
+
+calc_freq_na <- function(df) {
+  # Create a list to store the frequency of values and NA for each column
+  freq_na_list <- list()
+  
+  # Loop through each column in the data frame
+  for (col in colnames(df)) {
+    # Calculate the frequency of values and NA for the current column
+    freq_na <- table(df[, col], useNA = "always")
+    # Store the frequency of values and NA for the current column in the list
+    freq_na_list[[col]] <- freq_na
+  }
+  
+  # Return the list
+  return(freq_na_list)
+}
+ # calc_freq_na(Rmath2)
+```
+
+```{r Recode hell}
+# Use recode to replace values
+recode_hell <- function(df) {
+  for (col in names(df)) {
+    df[[col]] <- recode(df[[col]], "'NO CREDIT' = 0; 'FULL CREDIT' = 1; 	
+                        '0 - NO CREDIT'=0;
+                        '1 - FULL CREDIT'= 1; 
+                        '11 - PARTIAL CREDIT'=1; 
+                        '12 - PARTIAL CREDIT'=1;
+                        '13 - PARTIAL CREDIT'=1; 
+                        '21 - FULL CREDIT'=2;		
+                        '22 - FULL CREDIT'=2;
+                        '23 - FULL CREDIT'=2;
+                        '00 - NO CREDIT'=0;
+                        '02 - NO CREDIT'=0;
+                        '01 - NO CREDIT'=0;
+                        '1 - PARTIAL CREDIT' = 1;
+                        '2 - FULL CREDIT'=2;
+                        'NO RESPONSE' = NA;
+                        'NOT APPLICABLE' = NA;
+                        'NOT REACHED' = NA;
+                        NA = NA")
+  }
+  return(df)
+}
+
+god_hell <- function(data, form_number) {
+  # Filter the data for the given form number
+  sos1 <- filter(data, bookid == form_number)
+  
+  # Subset the data
+  sosm1 <- megasubset(sos1)
+  
+  # Find the columns with NA values
+  sosmf1 <- find_na_cols(sosm1)
+  
+  # Recode the full data
+  sos1 <- recode_hell(sosmf1)
+  
+  # Convert the data to a data frame
+  sos1m <- as.data.frame(apply(sos1, 2, as.numeric))
+  
+  # Calculate the mean of the NA values
+  mean_na <- mean(is.na(sos1m))
+  
+  # Return the mean of the NA values
+  return(sos1m)
+}
+```
+
+```{r узнать % NA!}
+calculate_na_proportion <- function(df) {
+    # Calculate the number of missing values in the dataframe
+    num_na <- sum(is.na(df))
+    
+    # Calculate the proportion of missing values
+    na_proportion <- num_na / (ncol(df) * nrow(df))
+    
+    # Return the proportion of missing values
+    return(na_proportion)
+}
+```
+
